@@ -7,11 +7,13 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -26,6 +28,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
+import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
@@ -33,9 +36,20 @@ import com.lowagie.text.HeaderFooter;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.Row;
+import com.lowagie.text.pdf.AcroFields;
+import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfObject;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfReader;
+import com.lowagie.text.pdf.PdfStamper;
 import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.pdf.RandomAccessFileOrArray;
+import com.lowagie.text.pdf.draw.VerticalPositionMark;
+
 import java.awt.HeadlessException;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
@@ -973,19 +987,34 @@ public class GenerarReportes extends JPanel{
     	  		  
     	    	  Document pdf = new Document();
   		          pdf.setPageSize(PageSize.A4.rotate());
-  		          PdfWriter.getInstance(pdf,new FileOutputStream("Reporte.pdf"));
-  		             		                               		
-  		          HeaderFooter encabezado = new HeaderFooter(new Phrase("Direccion de procesos opticos y calificacion.Validacion de imagenes de "+
-  		                                                        "lectura optica " + short_name + " " + meses[month - 1] + " " + year + " " + fCadena, 
-                                                             new Font(Font.TIMES_ROMAN,12f,Font.BOLD)), false);  		          
+  		          PdfWriter.getInstance(pdf,new FileOutputStream("C:\\Users\\Daniel.Meza\\Desktop\\Reporte.pdf"));
+  		             	
+  		          Chunk espacio1 = new Chunk(new VerticalPositionMark(),260,false);  		            		          
+  		          Chunk espacio2 = new Chunk(new VerticalPositionMark(),717,true);
+  		          Chunk espacio3 = new Chunk(new VerticalPositionMark(),225,true);		          
+  		          
+  		          Phrase fraseEncabezado = new Phrase();
+  		          fraseEncabezado.add(new Chunk(espacio1));  		          
+  		          fraseEncabezado.add(new Chunk("Direccion de procesos ópticos y calificación",new Font(Font.TIMES_ROMAN,12f,Font.BOLD)));
+  		          fraseEncabezado.add(new Chunk(espacio2));  		         
+  		          fraseEncabezado.add(new Chunk(fCadena,new Font(Font.TIMES_ROMAN,6f,Font.NORMAL)));
+  		          fraseEncabezado.add(new Chunk(espacio3));  		          
+		          fraseEncabezado.add(new Chunk("Validación de imagenes de lectura óptica " + short_name + " " + meses[month - 1] + " " + year,
+		        		                         new Font(Font.TIMES_ROMAN,10f,Font.BOLD)));
+		          
+  		          
+  		          //fraseEncabezado.add(new Chunk("\n Validacion de imagenes de lectura optica"));
+  		          
+//  		        new Phrase("Direccion de procesos opticos y calificacion.Validacion de imagenes de "+
+//                          "lectura optica " + short_name + " " + meses[month - 1] + " " + year + " " + fCadena  		          
+  		          HeaderFooter encabezado = new HeaderFooter(fraseEncabezado,false);  		            		          
                   
   		          HeaderFooter pie = new HeaderFooter(new Phrase("",new Font(Font.TIMES_ROMAN,8f,Font.BOLD)),true);
   		           
   		          pdf.setHeader(encabezado);
   		          pdf.setFooter(pie);
   		           
-  		          pdf.open();
-  		          Paragraph parrafo = new Paragraph();
+  		          pdf.open();  		          
   		            		            		          
   		          Font fuenteDatos = new Font(Font.TIMES_ROMAN,6f);
 		          fuenteDatos.setStyle(Font.NORMAL);  		          
@@ -994,6 +1023,7 @@ public class GenerarReportes extends JPanel{
 		          PdfPTable tablaPdf;		          
                   tablaPdf = new PdfPTable(anchosCelda);
 		          tablaPdf.setWidthPercentage(100);
+		          tablaPdf.setTotalWidth((PageSize.A4.getWidth() - pdf.leftMargin() - pdf.rightMargin()) * tablaPdf.getWidthPercentage() / 100);
 		          
 		          String[] encabezados = {"No.","Aplicacion","Examen","Fecha aplicacion","Fecha alta","Imag Reg","Imag res","Preg",
                                           "Preg Mcontrol","Pres","Pres Mcontrol","Ruta","Estado","Observacion"};
@@ -1023,16 +1053,76 @@ public class GenerarReportes extends JPanel{
       	            	    	  frase.add(String.valueOf(dato));
       	            	     	  PdfPCell celda = new PdfPCell(frase);
       	            	     	  celda.setFixedHeight(20);        	            	    
-        	          	  tablaPdf.addCell(celda);
-        	            }      	            	  
+        	          	          tablaPdf.addCell(celda);
+        	                }
+      	            	    
       	               }      	                     	               
       	               
                   } 
+                  
+                  float alturaTabla = tablaPdf.calculateHeights(true);
+                  float alturaEncabezadoTabla = tablaPdf.getHeaderHeight();                  
+                                                     
+                  Rectangle dimensionPagina = pdf.getPageSize();
+                  float alturaPagina = dimensionPagina.getHeight();
+                  float alturaEncabezado = encabezado.getHeight();
+                  float alturaPie = pie.getHeight();
+                  float noPaginasFlotante = (alturaTabla + alturaEncabezado + alturaPie)/alturaPagina;
+                  float reales = ((((alturaEncabezado + alturaPie) * noPaginasFlotante) + alturaTabla)/alturaPagina) + 1;                  
+                  float resto = reales % 1;
+                  
+                  if( resto > 0.0 ){
+                	  reales += 1;
+                  }
+                  
+                  int noPaginas = Math.round(reales); 
+                  
+                  System.out.println("Altura pagina " + alturaPagina + " altura Tabla " + alturaTabla + " altura encabezado " + 
+                                     alturaEncabezado + " altura pie " + alturaPie);
+                  System.out.println("El numero de paginas es " + noPaginas);
+                  
+  		          pdf.add(tablaPdf);  		            		         
+  		            		          
+  		          Paragraph operadorSupervisor = new Paragraph();
+  		          operadorSupervisor.add(new Chunk("\n Operador"));
+  		          operadorSupervisor.setAlignment(Paragraph.ALIGN_JUSTIFIED_ALL);
+  		            		          
+  		          //pdf.add(operadorSupervisor);
   		          
-  		          pdf.add(tablaPdf);  		          
-  		          pdf.close();  		          
+  		          pdf.close();  		            	   	        
+       		          
+  		          String workingDir = System.getProperty("user.dir");
+  		          System.out.println(workingDir);
+			      RandomAccessFileOrArray doc = new RandomAccessFileOrArray("C:\\Users\\Daniel.Meza\\Desktop\\Reporte.pdf",false,true);
+			      PdfReader reader = new PdfReader(doc,null);
+			      int paginas = reader.getNumberOfPages();
+			      PdfContentByte contenido = null;
+			      			      
+			      AcroFields campos = reader.getAcroFields();
+			      
+			      Set<String> keys = campos.getFields().keySet();
+			      			      
+			      for(String key : keys){
+			    	  System.out.println("Se llama " + key);
+			      }
+			      
+			      PdfStamper stamper = new PdfStamper(reader,new FileOutputStream("C:\\Users\\Daniel.Meza\\Desktop\\Reporte1.pdf"));
+			      contenido = stamper.getOverContent(paginas);
+			      			      
+			      contenido.beginText();
+			      
+			      BaseFont bf_times = BaseFont.createFont(BaseFont.TIMES_ROMAN, "Cp1252", false);
+			      contenido.setFontAndSize(bf_times,8);
+			      contenido.showText("Prueba de rescritura");
+			      contenido.endText();
+			      System.out.println("El numero de paginas real es " + paginas);
+			      
+			      stamper.close();
+			      
+			      reader.close();
+				
   		           
-    	      }catch(FileNotFoundException | DocumentException e){ e.printStackTrace(); }    	    	      	             	    	  	       	    	       	              	    	 
+    	      }catch(DocumentException | IOException e){ e.printStackTrace(); }    	    	      	             	    	  	       	    	       	              	    	 
     	    
        }              	  
                  

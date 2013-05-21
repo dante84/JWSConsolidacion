@@ -32,11 +32,15 @@ class ButtonEditor extends DefaultCellEditor {
       private String label;
       private boolean isPushed;
       JFrame mainPanel;
-      private Object aplicacion;      
+      private Object aplicacion;     
+      private ConexionBase conexionBase;
+      private final String remoto = "172.16.50.14";
       
       public ButtonEditor(JCheckBox checkBox,JFrame applet) {
            
              super(checkBox);
+             
+             conexionBase = new ConexionBase();
              
              mainPanel = applet;
              button = new JButton();
@@ -85,9 +89,9 @@ class ButtonEditor extends DefaultCellEditor {
                                                                                       
                  try{
                                           
-                     Connection c = DriverManager.getConnection("jdbc:mysql://172.16.34.21:3306/ceneval","user","slipknot");                     
-                     Class.forName("com.mysql.jdbc.Driver");                   
-                                                
+                     //Connection c = DriverManager.getConnection("jdbc:mysql://172.16.34.21:3306/ceneval","user","slipknot");                                                            
+                     Connection c = conexionBase.getC(remoto,"ceneval","test","slipknot");
+                     
                      s = c.createStatement();
                                                 
                      System.out.println("antes del select");
@@ -146,7 +150,8 @@ class ButtonEditor extends DefaultCellEditor {
                                             String text = texto.getText();
                                             ResultSet rs = null;
                                             Statement s  = null;
-                                            Connection c = DriverManager.getConnection("jdbc:mysql://172.16.34.21:3306/ceneval","user","slipknot");
+                                            //Connection c = DriverManager.getConnection("jdbc:mysql://172.16.34.21:3306/ceneval","user","slipknot");
+                                            Connection c = conexionBase.getC(remoto,"ceneval","test","slipknot");
                                             
                                             try{
                                                 
