@@ -3,6 +3,7 @@
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.HeadlessException;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,23 +11,34 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
+import java.util.Locale;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+
+import org.joda.time.Chronology;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeField;
+import org.joda.time.LocalDate;
+import org.joda.time.chrono.ISOChronology;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
@@ -36,33 +48,10 @@ import com.lowagie.text.HeaderFooter;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.Row;
-import com.lowagie.text.pdf.AcroFields;
-import com.lowagie.text.pdf.BaseFont;
-import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfObject;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfReader;
-import com.lowagie.text.pdf.PdfStamper;
 import com.lowagie.text.pdf.PdfWriter;
-import com.lowagie.text.pdf.RandomAccessFileOrArray;
 import com.lowagie.text.pdf.draw.VerticalPositionMark;
-
-import java.awt.HeadlessException;
-import java.io.FileNotFoundException;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Locale;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-import org.joda.time.Chronology;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeField;
-import org.joda.time.LocalDate;
-import org.joda.time.chrono.ISOChronology;
  
 public class GenerarReportes extends JPanel{
     
@@ -684,86 +673,87 @@ public class GenerarReportes extends JPanel{
                                        
                 	     }
                              
-                             public void queryReporteAplicacion(String nomApp){                                                                        
+                         public void queryReporteAplicacion(String nomApp){                                                                        
                                     
-                                    try{
-                                        c = conexionBase.getC(remoto,"ceneval","test","slipknot");
-                                        //c = conexionBase.getC(localhost,"ceneval","user","slipknot");                                        
+                                try{
+                                    c = conexionBase.getC(remoto,"ceneval","test","slipknot");
+                                    //c = conexionBase.getC(localhost,"ceneval","user","slipknot");                                        
                                         
-                                        s = c.createStatement();
+                                    s = c.createStatement();
                                                                                    
-                                        String select;                                                                                                                                                                         
-                                        select = "select * from viimagenes where no_aplicacion = '" + nomApp + "'";
+                                    String select;                                                                                                                                                                         
+                                    select = "select * from viimagenes where no_aplicacion = '" + nomApp + "'";
                                            
-                                        System.out.println(select);
+                                    System.out.println(select);
                                            
-                                        rsMysql = s.executeQuery(select);                                        
+                                    rsMysql = s.executeQuery(select);                                        
                                                   
-                                        if( !rsMysql.isBeforeFirst() ){
+                                    if( !rsMysql.isBeforeFirst() ){
                                             
-                                             JOptionPane.showMessageDialog(
-                                                         null,
-                                                         "No existe ese numero de aplicacion",
-                                                         "Aplicacion Inexistente",
-                                                         JOptionPane.WARNING_MESSAGE);    
+                                        JOptionPane.showMessageDialog(
+                                                    null,
+                                                    "No existe ese numero de aplicacion",
+                                                    "Aplicacion Inexistente",
+                                                    JOptionPane.WARNING_MESSAGE);    
                                              
-                                        }else{
+                                    }else{
                                             
-                                              DefaultTableModel dtm = new DefaultTableModel();
-                                         
-                                              TableCellRenderer renderer = new JComponentTableCellRenderer();                                                                                                                                                                                                                  
+                                          DefaultTableModel dtm = new DefaultTableModel();
+                                        
+                                          TableCellRenderer renderer = new JComponentTableCellRenderer();                                                                                                                                                                                                                  
                                           
-                                              for( int l = 0;l <= nombresCantidad;l++){ dtm.addColumn(""); }
+                                          for( int l = 0;l <= nombresCantidad;l++){ dtm.addColumn(""); }
                                           
-                                              tabla.setModel(dtm);
-                                              TableColumnModel columnModel = tabla.getColumnModel();
+                                          tabla.setModel(dtm);
+                                          TableColumnModel columnModel = tabla.getColumnModel();
                                           
-                                              for( int k = 0; k <= nombresCantidad; k++ ){
-                                                   TableColumn tcTemp = columnModel.getColumn(k);                                                              
-                                                   JLabel encabezado = new JLabel(nombresColumnas[k]);
-                                                   tcTemp.setHeaderRenderer(renderer);
-                                                   tcTemp.setHeaderValue(encabezado);
-                                              }
+                                          for( int k = 0; k <= nombresCantidad; k++ ){
+                                               TableColumn tcTemp = columnModel.getColumn(k);                                                              
+                                               JLabel encabezado = new JLabel(nombresColumnas[k]);
+                                               tcTemp.setHeaderRenderer(renderer);
+                                               tcTemp.setHeaderValue(encabezado);
+                                          }
                                                                       
-                                              int consecutivo = 1;
-                                              while( rsMysql.next() ){               
+                                          int consecutivo = 1;
+                                          while( rsMysql.next() ){               
                                                    
-                                                     int numApp         = rsMysql.getInt(2);                                                     
-                                                     String nombre      = (rsMysql.getString(4) != null) ? rsMysql.getString(4) : " ";  
-                     		                     Date alta          = rsMysql.getDate(5);
-                                                     Date registro      = rsMysql.getDate(6);
-                                                     int imagReg        = rsMysql.getInt(7);
-                                                     int imagRes        = rsMysql.getInt(8);
-                                                     int preg           = rsMysql.getInt(9);                                                     
-                                                     int pregmc         = rsMysql.getInt(11);
-                                                     int pres           = rsMysql.getInt(12);                                                     
-                                                     int presmc         = rsMysql.getInt(14);  
-                                                     String ruta        = rsMysql.getString(15);                                                     
-                                                     String estado      = (rsMysql.getString(17) != null) ? rsMysql.getString(17) : " ";                                                     
-                                                     String observacion = (rsMysql.getString(18) != null) ? rsMysql.getString(18) : " ";                                                     
+                                        	     String numApp = String.format("%09d",rsMysql.getInt(2));                                                    	    
+                                      	         System.out.println("Formateada " + numApp);                                                    	                                                                                                  
+                                                 String nombre      = (rsMysql.getString(4) != null) ? rsMysql.getString(4) : " ";  
+                        		                 Date alta          = rsMysql.getDate(5);
+                                                 Date registro      = rsMysql.getDate(6);
+                                                 int imagReg        = rsMysql.getInt(7);
+                                                 int imagRes        = rsMysql.getInt(8);
+                                                 int preg           = rsMysql.getInt(9);                                                     
+                                                 int pregmc         = rsMysql.getInt(11);
+                                                 int pres           = rsMysql.getInt(12);                                                     
+                                                 int presmc         = rsMysql.getInt(14);  
+                                                 String ruta        = rsMysql.getString(15);                                                     
+                                                 String estado      = (rsMysql.getString(17) != null) ? rsMysql.getString(17) : " ";                                                     
+                                                 String observacion = (rsMysql.getString(18) != null) ? rsMysql.getString(18) : " ";                                                     
                                                                                                           
-                                                     short_name = nombre;
-                                                     year = new DateTime(alta).getYear();
-                                                     month = new DateTime(alta).getMonthOfYear();
+                                                 short_name = nombre;
+                                                 year = new DateTime(alta).getYear();
+                                                 month = new DateTime(alta).getMonthOfYear();
                                                      
-                                                     System.out.println(consecutivo + " " +numApp + " " + nombre + " " +alta.toString() + " " + registro.toString() + 
-                                                                        " " + imagReg + " " + imagRes + " " + preg + " " + pregmc + " " + pres + 
-                                                                        " " + presmc + " " + ruta + " " + estado + " " + 
-                                                                        observacion);
+                                                 System.out.println(consecutivo + " " +numApp + " " + nombre + " " +alta.toString() + " " + registro.toString() + 
+                                                                    " " + imagReg + " " + imagRes + " " + preg + " " + pregmc + " " + pres + 
+                                                                    " " + presmc + " " + ruta + " " + estado + " " + 
+                                                                    observacion);
                                                      
-                                                     Object[] datos = new Object[]{ consecutivo,numApp,nombre,alta.toString(),registro.toString(),imagReg,imagRes,
-                                                                                    preg,pregmc,pres,presmc,ruta,estado,observacion };
+                                                 Object[] datos = new Object[]{ consecutivo,numApp,nombre,alta.toString(),registro.toString(),imagReg,imagRes,
+                                                                                preg,pregmc,pres,presmc,ruta,estado,observacion };
                              
-                                                     datosReporte.add(datos);                             
-                                                     dtm.addRow(datos);                                                                  
+                                                 datosReporte.add(datos);                             
+                                                 dtm.addRow(datos);                                                                  
                                                
-                                              }
+                                             }
                                               
-                                        }
+                                    }
                                           
-                                        s.close();
-                                        c.close();
-                                        rsMysql.close();
+                                    s.close();
+                                    c.close();
+                                    rsMysql.close();
                                                                                                                                                                                                                                                                                                                                                                         
                                     }catch(SQLException | HeadlessException e){ e.printStackTrace(); }
                                     finally{
@@ -848,15 +838,15 @@ public class GenerarReportes extends JPanel{
                                            
                                               rsMysql = s.executeQuery(select);                                        
                                                   
-                                               if( !rsMysql.isBeforeFirst() ){
+                                              if( !rsMysql.isBeforeFirst() ){
                                             
-                                                JOptionPane.showMessageDialog(
+                                                   JOptionPane.showMessageDialog(
                                                          null,
                                                          "No existe ese numero de aplicacion",
                                                          "Aplicacion Inexistente",
                                                          JOptionPane.WARNING_MESSAGE);    
                                              
-                                               }else{
+                                              }else{
                                             
                                                      DefaultTableModel dtm = new DefaultTableModel();
                                          
@@ -877,9 +867,10 @@ public class GenerarReportes extends JPanel{
                                                      int consecutivo = 1;
                                                      while( rsMysql.next() ){               
                                                    
-                                                            int numApp         = rsMysql.getInt(2);                                                     
-                                                            String nombre_corto      = (rsMysql.getString(4) != null) ? rsMysql.getString(4) : " ";  
-                     		                            Date alta          = rsMysql.getDate(5);
+                                                    	    String numApp = String.format("%09d",rsMysql.getInt(2));                                                    	    
+                                                    	    System.out.println("Formateada " + numApp);                                                    	    
+                                                            String nombre_corto   = (rsMysql.getString(4) != null) ? rsMysql.getString(4) : " ";  
+                     		                                Date alta          = rsMysql.getDate(5);
                                                             Date registro      = rsMysql.getDate(6);
                                                             int imagReg        = rsMysql.getInt(7);
                                                             int imagRes        = rsMysql.getInt(8);
@@ -982,8 +973,7 @@ public class GenerarReportes extends JPanel{
     	    	  
     	    	  SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
     	    	  SimpleDateFormat sdf1 = new SimpleDateFormat("dd/MMHH:mm");
-    	  		  String fCadena = sdf.format(new Date());
-    	  		  String f1Cadena = sdf1.format(new Date());
+    	  		  String fCadena = sdf.format(new Date());    	  		  
     	  		  
     	    	  Document pdf = new Document();
   		          pdf.setPageSize(PageSize.A4.rotate());
@@ -995,18 +985,13 @@ public class GenerarReportes extends JPanel{
   		          
   		          Phrase fraseEncabezado = new Phrase();
   		          fraseEncabezado.add(new Chunk(espacio1));  		          
-  		          fraseEncabezado.add(new Chunk("Direccion de procesos ópticos y calificación",new Font(Font.TIMES_ROMAN,12f,Font.BOLD)));
+  		          fraseEncabezado.add(new Chunk("Direccion de Procesos Ópticos y Calificación",new Font(Font.TIMES_ROMAN,12f,Font.BOLD)));
   		          fraseEncabezado.add(new Chunk(espacio2));  		         
   		          fraseEncabezado.add(new Chunk(fCadena,new Font(Font.TIMES_ROMAN,6f,Font.NORMAL)));
   		          fraseEncabezado.add(new Chunk(espacio3));  		          
-		          fraseEncabezado.add(new Chunk("Validación de imagenes de lectura óptica " + short_name + " " + meses[month - 1] + " " + year,
+		          fraseEncabezado.add(new Chunk("Validación de imagenes de lectura óptica " + short_name + " " + meses[month - 1] + " del " + year,
 		        		                         new Font(Font.TIMES_ROMAN,10f,Font.BOLD)));
 		          
-  		          
-  		          //fraseEncabezado.add(new Chunk("\n Validacion de imagenes de lectura optica"));
-  		          
-//  		        new Phrase("Direccion de procesos opticos y calificacion.Validacion de imagenes de "+
-//                          "lectura optica " + short_name + " " + meses[month - 1] + " " + year + " " + fCadena  		          
   		          HeaderFooter encabezado = new HeaderFooter(fraseEncabezado,false);  		            		          
                   
   		          HeaderFooter pie = new HeaderFooter(new Phrase("",new Font(Font.TIMES_ROMAN,8f,Font.BOLD)),true);
@@ -1058,69 +1043,28 @@ public class GenerarReportes extends JPanel{
       	            	    
       	               }      	                     	               
       	               
-                  } 
-                  
-                  float alturaTabla = tablaPdf.calculateHeights(true);
-                  float alturaEncabezadoTabla = tablaPdf.getHeaderHeight();                  
-                                                     
-                  Rectangle dimensionPagina = pdf.getPageSize();
-                  float alturaPagina = dimensionPagina.getHeight();
-                  float alturaEncabezado = encabezado.getHeight();
-                  float alturaPie = pie.getHeight();
-                  float noPaginasFlotante = (alturaTabla + alturaEncabezado + alturaPie)/alturaPagina;
-                  float reales = ((((alturaEncabezado + alturaPie) * noPaginasFlotante) + alturaTabla)/alturaPagina) + 1;                  
-                  float resto = reales % 1;
-                  
-                  if( resto > 0.0 ){
-                	  reales += 1;
                   }
                   
-                  int noPaginas = Math.round(reales); 
-                  
-                  System.out.println("Altura pagina " + alturaPagina + " altura Tabla " + alturaTabla + " altura encabezado " + 
-                                     alturaEncabezado + " altura pie " + alturaPie);
-                  System.out.println("El numero de paginas es " + noPaginas);
-                  
-  		          pdf.add(tablaPdf);  		            		         
+                  pdf.add(tablaPdf);
   		            		          
-  		          Paragraph operadorSupervisor = new Paragraph();
-  		          operadorSupervisor.add(new Chunk("\n Operador"));
-  		          operadorSupervisor.setAlignment(Paragraph.ALIGN_JUSTIFIED_ALL);
-  		            		          
-  		          //pdf.add(operadorSupervisor);
+                  Paragraph parrafo = new Paragraph();
+                                    
+  		          Phrase operadorSupervisor = new Phrase();  		            		             
+  		          operadorSupervisor.add("                     ____________________________                                        " +
+  		          		                 "                  ____________________________ ");  		            		          
+  		          operadorSupervisor.add(new Chunk("\n"));
+  		          Chunk campos = new Chunk("                                                    Operador                                          " +
+  		          		 "                                                                                                 Supervisor ",
+  		        		                   new Font(Font.TIMES_ROMAN,10f,Font.BOLD));
+  		          operadorSupervisor.add(campos);
+  		          parrafo.add(operadorSupervisor);
+  		          
+  		          pdf.add(parrafo);
   		          
   		          pdf.close();  		            	   	        
        		          
   		          String workingDir = System.getProperty("user.dir");
-  		          System.out.println(workingDir);
-			      RandomAccessFileOrArray doc = new RandomAccessFileOrArray("C:\\Users\\Daniel.Meza\\Desktop\\Reporte.pdf",false,true);
-			      PdfReader reader = new PdfReader(doc,null);
-			      int paginas = reader.getNumberOfPages();
-			      PdfContentByte contenido = null;
-			      			      
-			      AcroFields campos = reader.getAcroFields();
-			      
-			      Set<String> keys = campos.getFields().keySet();
-			      			      
-			      for(String key : keys){
-			    	  System.out.println("Se llama " + key);
-			      }
-			      
-			      PdfStamper stamper = new PdfStamper(reader,new FileOutputStream("C:\\Users\\Daniel.Meza\\Desktop\\Reporte1.pdf"));
-			      contenido = stamper.getOverContent(paginas);
-			      			      
-			      contenido.beginText();
-			      
-			      BaseFont bf_times = BaseFont.createFont(BaseFont.TIMES_ROMAN, "Cp1252", false);
-			      contenido.setFontAndSize(bf_times,8);
-			      contenido.showText("Prueba de rescritura");
-			      contenido.endText();
-			      System.out.println("El numero de paginas real es " + paginas);
-			      
-			      stamper.close();
-			      
-			      reader.close();
-				
+  		          System.out.println(workingDir);				
   		           
     	      }catch(DocumentException | IOException e){ e.printStackTrace(); }    	    	      	             	    	  	       	    	       	              	    	 
     	    

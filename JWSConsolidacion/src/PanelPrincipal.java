@@ -52,12 +52,9 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
  
 public class PanelPrincipal extends JPanel {
-     
-       /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private static JFrame frame;                                           
+        
+	   private static final long serialVersionUID = 1L;
+	   private static JFrame frame;                                           
        private JLabel eRutaExcel,eMes,eTExamen,eSTExamen,eExcel,eProcesando;
        private JPanel panelAplicacion,panelExcel,panelDown;              
        private JTextField cRuta,cExcel;
