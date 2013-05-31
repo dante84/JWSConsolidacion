@@ -977,7 +977,7 @@ public class GenerarReportes extends JPanel{
     	  		  
     	    	  Document pdf = new Document();
   		          pdf.setPageSize(PageSize.A4.rotate());
-  		          PdfWriter.getInstance(pdf,new FileOutputStream("C:\\Users\\Daniel.Meza\\Desktop\\Reporte.pdf"));
+  		          PdfWriter.getInstance(pdf,new FileOutputStream("Reporte.pdf"));
   		             	
   		          Chunk espacio1 = new Chunk(new VerticalPositionMark(),260,false);  		            		          
   		          Chunk espacio2 = new Chunk(new VerticalPositionMark(),717,true);
